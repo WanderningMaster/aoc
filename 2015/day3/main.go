@@ -63,5 +63,5 @@ func main() {
 	}
 
 	processInstructions(string(input), coordsSet)
-	fmt.Println(len(coordsSet.data))
+	fmt.Printf("Houses: %v", len(coordsSet.data))
 }
