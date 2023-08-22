@@ -40,6 +40,7 @@ func processInstructions(input string, coordsSet *CoordsSet) {
 	}
 
 	currCoord := Coord{x: 0, y: 0}
+	coordsSet.append(currCoord)
 	for _, c := range input {
 		change := cmd[c]
 		currCoord = Coord{x: currCoord.x + change.x, y: currCoord.y + change.y}
@@ -47,20 +48,52 @@ func processInstructions(input string, coordsSet *CoordsSet) {
 	}
 }
 
+func sepInstructions(input string) (string, string) {
+	var santa, roboSanta string
+
+	for idx, c := range input {
+		if idx%2 == 0 {
+			santa = santa + string(c)
+		} else {
+			roboSanta = roboSanta + string(c)
+		}
+	}
+
+	return santa, roboSanta
+}
+
+func mergeInstructions(set1, set2 *CoordsSet) *CoordsSet {
+	merged := NewCoordset()
+
+	for _, value := range set1.data {
+		merged.append(value)
+	}
+	for _, value := range set2.data {
+		merged.append(value)
+	}
+
+	return merged
+}
+
 func main() {
-	coordsSet := NewCoordset()
+	santaSet := NewCoordset()
+	roboSantaSet := NewCoordset()
 	dirname, err := utils.Dirname()
 	if err != nil {
 		log.Fatalln(err)
 		os.Exit(1)
 	}
 
-	input, err := os.ReadFile(dirname + "/2015/day3/in.txt")
+	input, err := os.ReadFile(dirname + "/2015/day3/part2/in.txt")
 
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
 		os.Exit(1)
 	}
-	processInstructions(string(input), coordsSet)
-	fmt.Printf("Houses: %v\n", len(coordsSet.data))
+	santa, robotSanta := sepInstructions(string(input))
+	processInstructions(santa, santaSet)
+	processInstructions(robotSanta, roboSantaSet)
+	coordsSet := mergeInstructions(santaSet, roboSantaSet)
+
+	fmt.Printf("Merged: %v\n", len(coordsSet.data))
 }
