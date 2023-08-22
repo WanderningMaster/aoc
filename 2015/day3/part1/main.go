@@ -61,7 +61,6 @@ func main() {
 		log.Fatalf("unable to read file: %v", err)
 		os.Exit(1)
 	}
-
 	processInstructions(string(input), coordsSet)
-	fmt.Printf("Houses: %v", len(coordsSet.data))
+	fmt.Printf("Houses: %v\n", len(coordsSet.data))
 }
