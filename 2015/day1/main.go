@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/WanderningMaster/aoc/internal/utils"
 	"fmt"
 	"log"
 	"os"
@@ -20,7 +21,13 @@ func countParenthesis(input string) int {
 }
 
 func main() {
-	body, err := os.ReadFile("./in.txt")
+	dirname, err := utils.Dirname()
+	if err != nil {
+		log.Fatalln(err)
+		os.Exit(1)
+	}
+
+	body, err := os.ReadFile(dirname + "/2015/day1/in.txt")
 
 	if err != nil {
 		log.Fatalf("unable to read file: %v", err)
@@ -28,5 +35,5 @@ func main() {
 	}
 
 	output := fmt.Sprintf("Floor: %v\n", countParenthesis(string(body)))
-	os.WriteFile("out.txt", []byte(output), 0)
+	os.WriteFile(dirname + "/2015/day1/out.txt", []byte(output), 0)
 }
