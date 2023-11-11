@@ -7,3 +7,21 @@ func Map(vs []string, f func(string) interface{}) []interface{} {
 	}
 	return vsm
 }
+
+func MaxSlice(slice []int) (int, int) {
+	max := 0
+	maxIdx := 0
+
+	for idx, x := range slice {
+		if x > max {
+			max = x
+			maxIdx = idx
+		}
+	}
+
+	return max, maxIdx
+}
+
+func RemoveIntSlice(slice []int, idx int) []int {
+	return append(slice[:idx], slice[idx+1:]...)
+}

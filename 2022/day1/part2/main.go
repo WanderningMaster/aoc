@@ -31,32 +31,14 @@ func parseInput(input string) []int {
 	return res
 }
 
-func Max(slice []int) (int, int) {
-	max := 0
-	maxIdx := 0
-
-	for idx, x := range slice {
-		if x > max {
-			max = x
-			maxIdx = idx
-		}
-	}
-
-	return max, maxIdx
-}
-
-func Remove(slice []int, s int) []int {
-	return append(slice[:s], slice[s+1:]...)
-}
-
 func findTop3(calories []int) int {
 	total := 0
 	count := 3
 
 	for count > 0 {
-		max, idx := Max(calories)
+		max, idx := utils.MaxSlice(calories)
 		total += max
-		calories = Remove(calories, idx)
+		calories = utils.RemoveIntSlice(calories, idx)
 		count -= 1
 	}
 
