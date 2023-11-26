@@ -136,7 +136,7 @@ func cdCommand(comm []string, stackTrace *utils.Stack) {
 
 func lsCommand(comm []string, stackTrace *utils.Stack, root *TreeNode) {
 	currDir, err := stackTrace.Peek()
-	if err != nil {
+if err != nil {
 		log.Fatal(err)
 	}
 	for _, el := range comm[1:] {
