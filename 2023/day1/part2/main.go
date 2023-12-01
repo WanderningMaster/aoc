@@ -12,17 +12,6 @@ import (
 
 const MaxStrDigitLen = 5
 
-func MapKeys(_map map[string]int) []string {
-	keys := make([]string, len(_map))
-
-	i := 0
-	for k := range _map {
-		keys[i] = k
-		i++
-	}
-
-	return keys
-}
 
 func strToDigit(str string) (error, int) {
 	str2Digit := map[string]int{
@@ -36,7 +25,7 @@ func strToDigit(str string) (error, int) {
 		"eight": 8,
 		"nine":  9,
 	}
-	keys := MapKeys(str2Digit)
+	keys := utils.MapKeys(str2Digit)
 	match := ""
 	for _, key := range keys {
 		if strings.HasPrefix(str, key) {

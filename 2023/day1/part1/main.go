@@ -46,6 +46,6 @@ func solve(input string) int {
 
 func main() {
 	input := utils.ReadFile("/2023/day1/in.txt")
-    
-    fmt.Println("Result: ", solve(input))
+
+	fmt.Println("Result: ", solve(input))
 }
