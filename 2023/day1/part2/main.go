@@ -10,9 +10,6 @@ import (
 	"github.com/WanderningMaster/aoc/internal/utils"
 )
 
-const MaxStrDigitLen = 5
-
-
 func strToDigit(str string) (error, int) {
 	str2Digit := map[string]int{
 		"one":   1,
@@ -69,23 +66,16 @@ func solve(input string) int {
 	lines := strings.Split(input, "\n")
 
 	lineNumber := func(f, l int) int {
-		if f == -1 && l == -1 {
-			panic("broken input")
-		}
+		f_str := fmt.Sprintf("%d", f)
+		l_str := fmt.Sprintf("%d", l)
 		if f == -1 {
-			num, _ := strconv.Atoi(
-				fmt.Sprintf("%d%d", l, l),
-			)
-			return num
+			f_str = l_str
 		}
 		if l == -1 {
-			num, _ := strconv.Atoi(
-				fmt.Sprintf("%d%d", f, f),
-			)
-			return num
+			l_str = f_str
 		}
 		num, _ := strconv.Atoi(
-			fmt.Sprintf("%d%d", f, l),
+			f_str + l_str,
 		)
 
 		return num
@@ -93,7 +83,6 @@ func solve(input string) int {
 
 	for _, line := range lines {
 		f, l := parseLine(line)
-		fmt.Println(lineNumber(f, l))
 		sum += lineNumber(f, l)
 	}
 
@@ -102,8 +91,6 @@ func solve(input string) int {
 
 func main() {
 	input := utils.ReadFile("/2023/day1/in.txt")
-	fmt.Println(input)
 
 	fmt.Println("Result: ", solve(input))
 }
-
