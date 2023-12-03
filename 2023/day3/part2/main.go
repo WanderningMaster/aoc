@@ -27,11 +27,11 @@ func checkSymbolNearby(lines []string, num *SchematicNumber, mem map[string]int)
 	idxs = append(idxs, num.pos[len(num.pos)-1]+1)
 
 	for _, idx := range lineIdxs {
-		if idx < 0 || idx > len(lines)-1 {
+		if utils.OutOfRangeGuard(idx, lines) {
 			continue
 		}
 		for _, line_idx := range idxs {
-			if line_idx < 0 || line_idx > len(lines[idx])-1 {
+			if utils.OutOfRangeGuard(line_idx, []rune(lines[idx])) {
 				continue
 			}
 			if specialSymbol(rune(lines[idx][line_idx])) {
@@ -44,12 +44,12 @@ func checkSymbolNearby(lines []string, num *SchematicNumber, mem map[string]int)
 
 func solve(input string) int {
 	sum := 0
-
 	curr := ""
 	pos := []int{}
 	nums := []SchematicNumber{}
+    mem := map[string]int{}
+
 	lines := strings.Split(input, "\n")
-	mem := map[string]int{}
 	for idx, line := range lines {
 		for line_idx, ch := range line {
 			if unicode.IsDigit(ch) {
@@ -102,7 +102,6 @@ func solve(input string) int {
 
 func main() {
 	input := utils.ReadFile("/2023/day3/in.txt")
-	// fmt.Println(input)
 
 	res := solve(input)
 	fmt.Println("Result: ", res)

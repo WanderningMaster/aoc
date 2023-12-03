@@ -22,7 +22,6 @@ func MaxSlice(slice []int) (int, int) {
 	return max, maxIdx
 }
 
-
 func LastMaxSlice(slice []int) (int, int) {
 	max := 0
 	maxIdx := 0
@@ -39,4 +38,11 @@ func LastMaxSlice(slice []int) (int, int) {
 
 func RemoveIntSlice(slice []int, idx int) []int {
 	return append(slice[:idx], slice[idx+1:]...)
+}
+
+func OutOfRangeGuard[T comparable](idx int, arr []T) bool {
+	if idx < 0 || idx > len(arr)-1 {
+		return true
+	}
+	return false
 }
