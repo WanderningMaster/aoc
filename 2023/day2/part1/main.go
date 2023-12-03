@@ -92,7 +92,7 @@ func solve(input string) int {
 
 func main() {
 	input := utils.ReadFile("/2023/day2/in.txt")
-    
-    res := solve(input)
-    fmt.Println("Result: ", res)
+
+	res := solve(input)
+	fmt.Println("Result: ", res)
 }
