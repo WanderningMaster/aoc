@@ -9,15 +9,6 @@ import (
 	"github.com/WanderningMaster/aoc/internal/utils"
 )
 
-func parseConv(raw string) (int, int, int) {
-	splitted := strings.Split(raw, " ")
-	dest, _ := strconv.Atoi(splitted[0])
-	source, _ := strconv.Atoi(splitted[1])
-	r, _ := strconv.Atoi(splitted[2])
-
-	return dest - source, source, source + r - 1
-}
-
 func parseConvBackwards(raw string) (int, int, int) {
 	splitted := strings.Split(raw, " ")
 	dest, _ := strconv.Atoi(splitted[0])
@@ -51,22 +42,6 @@ func conv(offset int, minRange int, maxRange int, val int, skip *bool) int {
 	return convVal
 }
 
-func convSequence(seed int, rawMaps []string) int {
-	convVal := seed
-	for _, raw := range rawMaps {
-		skip := false
-		for _, r := range strings.Split(raw, "\n")[1:] {
-			if skip {
-				break
-			}
-			offset, minRange, maxRange := parseConv(r)
-			convVal = conv(offset, minRange, maxRange, convVal, &skip)
-		}
-	}
-
-	return convVal
-}
-
 func backwardsConvSequence(location int, rawMaps []string) int {
 	convVal := location
 	for _, raw := range rawMaps {
@@ -78,7 +53,6 @@ func backwardsConvSequence(location int, rawMaps []string) int {
 			offset, minRange, maxRange := parseConvBackwards(r)
 			convVal = conv(offset, minRange, maxRange, convVal, &skip)
 		}
-		// fmt.Printf("Loc: %d, Seed: %d\n", location, convVal)
 	}
 
 	return convVal
@@ -115,6 +89,8 @@ func solve(input string) int {
 	return lowest
 }
 
+// Am I a fucking joke???
+// ./main  109.62s user 2.01s system 107% cpu 1:44.22 total
 func main() {
 	input := utils.ReadFile("/2023/day5/in.txt")
 	res := solve(input)
