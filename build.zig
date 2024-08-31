@@ -1,35 +1,36 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) !void {
+pub fn build(b: *std.Build) void {
+    const day: usize = b.option(usize, "d", "Selected day") orelse @panic("Should select day");
+    const year: usize = b.option(usize, "y", "Selected year") orelse @panic("Should select day");
+
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    const allocator = std.heap.page_allocator;
 
-    const day: usize = b.option(usize, "d", "Select day") orelse @panic("Day should be specified");
-    const year: usize = b.option(usize, "y", "Select year") orelse @panic("Year should be specified");
+    std.debug.print("Year {} Day {}\n", .{ year, day });
 
-    std.debug.print("Day {} Year {}\n", .{ day, year });
-
-    const source_path = try std.fmt.allocPrint(allocator, "{}/day{}/main.zig", .{ year, day });
-    defer allocator.free(source_path);
+    const source_path = b.fmt("src/{}/day{}/main.zig", .{ year, day });
 
     const exe = b.addExecutable(.{
-        .name = "aoc",
+        .name = "zig-aoc",
         .root_source_file = b.path(source_path),
         .target = target,
         .optimize = optimize,
     });
+    const internal = b.addModule("internal", .{ .root_source_file = b.path("./src/internal/internal.zig") });
+    exe.root_module.addImport("internal", internal);
 
     b.installArtifact(exe);
-
     const run_cmd = b.addRunArtifact(exe);
 
     run_cmd.step.dependOn(b.getInstallStep());
 
-    std.debug.print("\nOutput:\n", .{});
-    // This creates a build step. It will be visible in the `zig build --help` menu,
-    // and can be selected like this: `zig build run`
-    // This will evaluate the `run` step rather than the default, which is "install".
+    if (b.args) |args| {
+        run_cmd.addArgs(args);
+    }
+
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
+
+    std.debug.print("\nOutput:\n", .{});
 }
