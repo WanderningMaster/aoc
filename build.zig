@@ -7,7 +7,11 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    std.debug.print("Year {} Day {}\n", .{ year, day });
+    const BOLD = comptime "\x1B[1m";
+    const GREEN = comptime "\x1B[32m";
+    const ED_OFF = comptime "\x1B[m";
+
+    std.debug.print("{s}Year {} Day {}{s}\n", .{ BOLD, year, day, ED_OFF });
 
     const source_path = b.fmt("src/{}/day{}/main.zig", .{ year, day });
 
@@ -29,8 +33,10 @@ pub fn build(b: *std.Build) void {
         run_cmd.addArgs(args);
     }
 
+    std.debug.print("\n{s}Output: {s}", .{ BOLD, ED_OFF });
+
+    std.debug.print("{s}", .{GREEN});
+
     const run_step = b.step("run", "Run the app");
     run_step.dependOn(&run_cmd.step);
-
-    std.debug.print("\nOutput:\n", .{});
 }

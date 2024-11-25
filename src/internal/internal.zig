@@ -1,3 +1,3 @@
-pub fn add(a: u32, b: u32) u32 {
-    return a + b;
-}
+pub const math = struct {
+    pub const add = @import("add.zig").add;
+};
