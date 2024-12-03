@@ -1,9 +1,11 @@
 const std = @import("std");
+const Level = @import("std").log.Level;
 
 pub fn build(b: *std.Build) void {
     const day: usize = b.option(usize, "d", "Selected day") orelse @panic("Should select day");
     const year: usize = b.option(usize, "y", "Selected year") orelse @panic("Should select day");
     const part: usize = b.option(usize, "p", "Selected part") orelse @panic("Should select part");
+    const logLevel: ?[]const u8 = b.option([]const u8, "level", "Selected level");
 
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -33,8 +35,8 @@ pub fn build(b: *std.Build) void {
 
     run_cmd.step.dependOn(b.getInstallStep());
 
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+    if (logLevel) |lvl| {
+        run_cmd.addArg(lvl);
     }
 
     const run_step = b.step("run", "Run the app");

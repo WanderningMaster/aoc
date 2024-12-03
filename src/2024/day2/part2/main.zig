@@ -1,13 +1,17 @@
 const std = @import("std");
 const ArrayList = std.ArrayList;
+const Tuple = std.meta.Tuple;
+const NewLogger = @import("internal").NewLogger;
+const Logger = @import("internal").Logger;
 
 const inputStr = @embedFile("./in.txt");
 
+const TupleDef = Tuple(&.{ bool, []usize });
 const Report = struct {
     data: []i32,
+    Log: Logger,
 
-    pub fn SafetyCheck(self: *const Report) bool {
-        // std.debug.print("List: {any}\n", .{self.data});
+    pub fn SafetyCheck(self: *const Report, allocator: std.mem.Allocator) !TupleDef {
         var diffSign: i8 = 0;
         for (0..self.data.len - 1) |idx| {
             const diff: i32 = self.data[idx] - self.data[idx + 1];
@@ -16,32 +20,56 @@ const Report = struct {
             }
 
             const sameSign = (diff ^ diffSign) >= 0;
-            // std.debug.print("{} {}\n", .{ sameSign, diff });
             if (sameSign and @abs(diff) >= 1 and @abs(diff) <= 3) {
                 continue;
             } else {
-                // std.debug.print("failed\n\n", .{});
-                return false;
+                var cList = ArrayList(usize).init(allocator);
+                defer cList.deinit();
+
+                try cList.append(idx);
+                try cList.append(idx + 1);
+                if (idx + 2 < self.data.len - 1) {
+                    try cList.append(idx + 2);
+                }
+
+                const maybeNegative: i32 = @intCast(idx);
+                if (maybeNegative - 1 >= 0) {
+                    try cList.append(idx - 1);
+                }
+                const considerations = try cList.toOwnedSlice();
+
+                return .{ false, considerations };
             }
         }
 
-        // std.debug.print("passed\n\n", .{});
-        return true;
+        const emptySlice: []usize = undefined;
+        return .{ true, emptySlice };
+    }
+
+    fn consider(self: *const Report, allocator: std.mem.Allocator, pos: usize) !bool {
+        var newList = try ArrayList(i32).fromOwnedSlice(allocator, self.data).clone();
+        _ = newList.orderedRemove(pos);
+
+        const newData = try newList.toOwnedSlice();
+
+        const modifiedReport = Report{ .data = newData, .Log = self.Log };
+
+        const res = try modifiedReport.SafetyCheck(allocator);
+        if (res[0]) {
+            return true;
+        }
+        return false;
     }
 
     pub fn SafetyCheckV2(self: *const Report, allocator: std.mem.Allocator) !bool {
-        if (self.SafetyCheck()) {
+        const res = try self.SafetyCheck(allocator);
+        if (res[0]) {
             return true;
         }
-        for (0..self.data.len) |idx| {
-            var newList = try ArrayList(i32).fromOwnedSlice(allocator, self.data).clone();
-            _ = newList.orderedRemove(idx);
-
-            const newData = try newList.toOwnedSlice();
-
-            const modifiedReport = Report{ .data = newData };
-
-            if (modifiedReport.SafetyCheck()) {
+        for (res[1]) |pos| {
+            self.Log.Debug("Consider for pos {}", .{pos});
+            const passed = try self.consider(allocator, pos);
+            if (passed) {
                 return true;
             }
         }
@@ -50,7 +78,7 @@ const Report = struct {
     }
 };
 
-pub fn parse(allocator: std.mem.Allocator, input: []const u8) ![]Report {
+pub fn parse(allocator: std.mem.Allocator, input: []const u8, Log: Logger) ![]Report {
     var reports = ArrayList(Report).init(allocator);
     defer reports.deinit();
 
@@ -69,25 +97,32 @@ pub fn parse(allocator: std.mem.Allocator, input: []const u8) ![]Report {
             try list.append(num);
         }
         const data = try list.toOwnedSlice();
-        const report = Report{ .data = data };
+        const report = Report{ .data = data, .Log = Log };
         try reports.append(report);
     }
     return try reports.toOwnedSlice();
 }
 
-pub fn solve(reports: []Report, allocator: std.mem.Allocator) !u32 {
+pub fn solve(reports: []Report, allocator: std.mem.Allocator, Log: Logger) !u32 {
     var count: u32 = 0;
     for (reports) |report| {
-        count += if (try report.SafetyCheckV2(allocator)) 1 else 0;
+        Log.Debug("Checking for {any}", .{report.data});
+        const passed = try report.SafetyCheckV2(allocator);
+        if (!passed) {
+            Log.Debug("Failed for {any}", .{report.data});
+        }
+
+        count += if (passed) 1 else 0;
     }
 
     return count;
 }
 
 pub fn main() !void {
+    const Log = try NewLogger();
     const allocator = std.heap.page_allocator;
-    const reports = try parse(allocator, inputStr);
-    const res = try solve(reports, allocator);
+    const reports = try parse(allocator, inputStr, Log);
+    const res = try solve(reports, allocator, Log);
 
-    std.debug.print("{}\n", .{res});
+    Log.Info("{}", .{res});
 }
