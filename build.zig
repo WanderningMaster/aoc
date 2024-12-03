@@ -11,13 +11,10 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const BOLD = comptime "\x1B[1m";
-    const GREEN = comptime "\x1B[32m";
     const ED_OFF = comptime "\x1B[m";
 
     std.debug.print("{s}Year {} Day {} Part {}{s}\n", .{ BOLD, year, day, part, ED_OFF });
     std.debug.print("\n{s}Output: {s}", .{ BOLD, ED_OFF });
-
-    std.debug.print("{s}\n", .{GREEN});
 
     const source_path = b.fmt("src/{}/day{}/part{}/main.zig", .{ year, day, part });
 
