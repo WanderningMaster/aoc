@@ -46,6 +46,11 @@ pub const Log = struct {
             std.debug.print(PURPLE ++ format ++ ED_OFF ++ "\n", args);
         }
     }
+    pub fn DebugErr(self: Log, comptime format: []const u8, args: anytype) void {
+        if (self.CheckLevel(.debug)) {
+            std.debug.print(RED ++ format ++ ED_OFF ++ "\n", args);
+        }
+    }
     pub fn Warn(self: Log, comptime format: []const u8, args: anytype) void {
         if (self.CheckLevel(.warn)) {
             std.debug.print(RED ++ format ++ ED_OFF ++ "\n", args);
