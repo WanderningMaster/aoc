@@ -2,10 +2,9 @@ const std = @import("std");
 const ArrayList = std.ArrayList;
 const NewLogger = @import("internal").NewLogger;
 const Logger = @import("internal").Logger;
+const Tuple = std.meta.Tuple;
 
 const inputStr = @embedFile("./in.txt");
-
-const Tuple = std.meta.Tuple;
 
 const TokenTyp = enum { MUL, NUMBER, LBRACE, RBRACE, SPACE, NEWLINE, COMMA, ILLEGAL, DO, DONT };
 
@@ -21,8 +20,7 @@ const Token = struct {
     }
 };
 
-const TupleDef = Tuple(&.{ Token, usize });
-fn parseNumber(input: []const u8, pos: usize) TupleDef {
+fn parseNumber(input: []const u8, pos: usize) Tuple(&.{ Token, usize }) {
     const startPos = pos;
     var newPos = pos;
     while (input[newPos] <= '9' and input[newPos] >= '0') {
@@ -200,7 +198,6 @@ fn solve(allocator: std.mem.Allocator, logger: Logger, tokens: []Token) !i64 {
 
 const Level = @import("std").log.Level;
 pub fn main() !void {
-    std.debug.print("info: {}, err: {} debug: {}\n", .{ @intFromEnum(Level.info), @intFromEnum(Level.err), @intFromEnum(Level.debug) });
     const allocator = std.heap.page_allocator;
     const Log = try NewLogger();
 

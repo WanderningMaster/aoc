@@ -2,9 +2,9 @@ const std = @import("std");
 const Level = @import("std").log.Level;
 
 pub fn build(b: *std.Build) void {
-    const day: usize = b.option(usize, "d", "Selected day") orelse @panic("Should select day");
-    const year: usize = b.option(usize, "y", "Selected year") orelse @panic("Should select day");
-    const part: usize = b.option(usize, "p", "Selected part") orelse @panic("Should select part");
+    const day: usize = b.option(usize, "d", "Selected day") orelse 1;
+    const year: usize = b.option(usize, "y", "Selected year") orelse 2024;
+    const part: usize = b.option(usize, "p", "Selected part") orelse 1;
     const logLevel: ?[]const u8 = b.option([]const u8, "level", "Selected level");
 
     const target = b.standardTargetOptions(.{});
