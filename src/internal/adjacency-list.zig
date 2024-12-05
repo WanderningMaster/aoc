@@ -38,14 +38,33 @@ pub const Graph = struct {
             std.debug.print("\n", .{});
         }
     }
+};
 
-    pub fn dfs(self: *Graph, start: usize, visited: []bool) void {
-        if (visited[start]) return;
-        visited[start] = true;
-        std.debug.print("Visited {}\n", .{start});
+pub const GraphSet = struct {
+    adjacency_set: []std.AutoHashMap(u32, u1), // Each vertex has a list of adjacent vertices
+    allocator: std.mem.Allocator,
 
-        for (self.adjacency_list[start].items) |neighbor| {
-            self.dfs(@as(usize, neighbor), visited);
+    pub fn init(allocator: std.mem.Allocator, vertex_count: usize) !GraphSet {
+        const adjacency_set = try allocator.alloc(std.AutoHashMap(u32, u1), vertex_count);
+        for (adjacency_set) |*set| {
+            set.* = std.AutoHashMap(u32, u1).init(allocator);
+        }
+        return GraphSet{
+            .adjacency_set = adjacency_set,
+            .allocator = allocator,
+        };
+    }
+
+    pub fn deinit(self: *GraphSet) void {
+        for (self.adjacency_set) |*set| {
+            set.deinit();
+        }
+        self.allocator.free(self.adjacency_set);
+    }
+
+    pub fn add_edge(self: *GraphSet, from: usize, to: u32) !void {
+        if (!self.adjacency_set[from].contains(to)) {
+            try self.adjacency_set[from].put(to, 0);
         }
     }
 };
