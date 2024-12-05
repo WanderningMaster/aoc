@@ -94,8 +94,6 @@ pub fn main() !void {
     var manual = try parse(allocator, inputStr);
     defer manual.deinit();
 
-    const visited = try allocator.alloc(bool, 100);
-    defer allocator.free(visited);
     const res = try solve(allocator, Log, manual);
 
     Log.Info("{}", .{res});
