@@ -60,7 +60,6 @@ fn solve(allocator: std.mem.Allocator, log: Logger, manual: Manual) !u64 {
         var ordered = try allocator.alloc(u32, update.len);
         defer allocator.free(ordered);
 
-        var valid: bool = false;
         for (0..update.len) |currIdx| {
             const rules = manual.rules.adjacency_list[@intCast(update[currIdx])];
 
@@ -76,9 +75,6 @@ fn solve(allocator: std.mem.Allocator, log: Logger, manual: Manual) !u64 {
 
             const orderedIdx: usize = update.len - 1 - found;
             ordered[orderedIdx] = update[currIdx];
-            if (orderedIdx == currIdx) {
-                valid = true;
-            }
         }
         log.Debug("Update: {any} Ordered: {any}", .{ update, ordered });
 
