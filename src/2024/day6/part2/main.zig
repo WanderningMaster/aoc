@@ -171,57 +171,64 @@ fn parse(allocator: std.mem.Allocator, log: Logger, input: []const u8) !Map {
     return map;
 }
 
-fn solve(map: *Map, allocator: std.mem.Allocator, log: Logger) !u32 {
-    var hitLoop: u32 = 0;
+var shared_counter: u32 = 0;
+var lock = std.Thread.Mutex{};
 
+const ThreadData = struct { val: Point, map: *Map, wg: *std.Thread.WaitGroup };
+
+fn worker(data: ThreadData) void {
+    const allocator = std.heap.page_allocator;
+    const log = NewLogger() catch unreachable;
+    const p = Point{ .x = data.val.x, .y = data.val.y };
+
+    var modified = Map.clone(allocator, log, data.map) catch unreachable;
+
+    if (!modified.obstructions.contains(p)) {
+        modified.obstructions.put(p, 0) catch unreachable;
+    }
+
+    while (true) {
+        const stop = modified.move() catch {
+            lock.lock();
+            shared_counter += 1;
+            lock.unlock();
+
+            break;
+        };
+        if (!stop) break;
+    }
+
+    modified.deinit();
+    data.wg.finish();
+}
+
+fn solve(map: *Map, allocator: std.mem.Allocator, log: Logger) !u32 {
     var mapCopy = try Map.clone(allocator, log, map);
     while (try mapCopy.move()) {}
 
+    const tallocator: std.heap.ThreadSafeAllocator = .{
+        .child_allocator = allocator,
+    };
+
+    var pool: std.Thread.Pool = undefined;
+    try pool.init(std.Thread.Pool.Options{ .allocator = tallocator.child_allocator, .n_jobs = 10 });
+    defer pool.deinit();
+
+    var wg: std.Thread.WaitGroup = undefined;
+    wg.reset();
+
     var it = mapCopy.distinctLocations.keyIterator();
     while (it.next()) |val| {
-        const p = Point{ .x = val.x, .y = val.y };
-
-        var modified = try Map.clone(allocator, log, map);
-
-        if (!modified.obstructions.contains(p)) {
-            try modified.obstructions.put(p, 0);
-        }
-
-        while (true) {
-            const stop = modified.move() catch {
-                hitLoop += 1;
-                break;
-            };
-            if (!stop) break;
-        }
-
-        modified.deinit();
+        wg.start();
+        try pool.spawn(worker, .{@as(ThreadData, .{
+            .val = val.*,
+            .map = map,
+            .wg = &wg,
+        })});
     }
+    wg.wait();
 
-    // for (0..@intCast(map.boundaries.x + 1)) |x| {
-    //     for (0..@intCast(map.boundaries.y + 1)) |y| {
-    //         const p = Point{ .x = @intCast(x), .y = @intCast(y) };
-    //
-    //         var newMap = try Map.clone(allocator, log, map);
-    //
-    //         if (!newMap.obstructions.contains(p)) {
-    //             try newMap.obstructions.put(p, 0);
-    //         }
-    //
-    //         while (true) {
-    //             const stop = newMap.move() catch {
-    //                 // log.Err("Tried: {any}", .{p});
-    //                 hitLoop += 1;
-    //                 break;
-    //             };
-    //             if (!stop) break;
-    //         }
-    //
-    //         newMap.deinit();
-    //     }
-    // }
-
-    return hitLoop;
+    return shared_counter;
 }
 
 pub fn main() !void {
