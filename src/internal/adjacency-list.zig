@@ -40,6 +40,64 @@ pub const Graph = struct {
     }
 };
 
+pub fn GraphGeneric(comptime _type: type) type {
+    return struct {
+        const Self = @This();
+
+        adjacency_list: []std.ArrayList(_type),
+        allocator: std.mem.Allocator,
+        index: usize = 0,
+
+        pub fn init(allocator: std.mem.Allocator, vertex_count: usize) !Self {
+            const adjacency_list = try allocator.alloc(std.ArrayList(_type), vertex_count);
+            for (adjacency_list) |*list| {
+                list.* = std.ArrayList(_type).init(allocator);
+            }
+            return Self{ .adjacency_list = adjacency_list, .allocator = allocator, .index = 0 };
+        }
+
+        pub fn reset_iter(self: *Self) void {
+            self.index = 0;
+        }
+
+        pub fn next(self: *Self) ?[]_type {
+            while (self.index < self.adjacency_list.len) {
+                defer self.index += 1;
+
+                if (self.adjacency_list[self.index].items.len != 0) {
+                    return self.adjacency_list[self.index].items;
+                }
+            }
+
+            return null;
+        }
+
+        pub fn deinit(self: *Self) void {
+            for (self.adjacency_list) |*list| {
+                list.deinit();
+            }
+            self.allocator.free(self.adjacency_list);
+        }
+
+        pub fn add_edge(self: *Self, from: usize, to: _type) !void {
+            try self.adjacency_list[from].append(to);
+        }
+
+        pub fn display(self: *const Self) void {
+            for (self.adjacency_list, 0..) |list, i| {
+                if (list.items.len == 0) {
+                    continue;
+                }
+                std.debug.print("{} -> ", .{i});
+                for (list.items) |vertex| {
+                    std.debug.print("{} ", .{vertex});
+                }
+                std.debug.print("\n", .{});
+            }
+        }
+    };
+}
+
 pub const GraphSet = struct {
     adjacency_set: []std.AutoHashMap(u32, u1), // Each vertex has a list of adjacent vertices
     allocator: std.mem.Allocator,
