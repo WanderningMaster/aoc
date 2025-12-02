@@ -37,7 +37,8 @@ defmodule Mix.Tasks.Aoc do
 
         true ->
           try do
-            value = apply(mod, :run, [])
+            {micros, value} = :timer.tc(fn -> apply(mod, :run, []) end)
+            Mix.shell().info("time: #{format_duration(micros)}")
             Mix.shell().info(inspect(value))
             {:ok, value}
           rescue
@@ -72,6 +73,16 @@ defmodule Mix.Tasks.Aoc do
       String.to_atom(String.capitalize(day)),
       String.to_atom(String.capitalize(part))
     ])
+  end
+
+  defp format_duration(micros) when is_integer(micros) and micros < 1_000_000 do
+    ms = micros / 1_000
+    :io_lib.format("~.3f ms", [ms]) |> IO.iodata_to_binary()
+  end
+
+  defp format_duration(micros) when is_integer(micros) do
+    sec = micros / 1_000_000
+    :io_lib.format("~.3f s", [sec]) |> IO.iodata_to_binary()
   end
 
   defp exit_status(results) do
